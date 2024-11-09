@@ -32,6 +32,14 @@ class DatabaseHelper{
         token TEXT
       )
     ''');
+    await db.execute('''
+      CREATE TABLE locations(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        latitude REAL,
+        longitude REAL,
+        timestamp TEXT
+      )
+    ''');
   }
   Future login(String username, String password) async {
     var url = dotenv.env['API_URL']! + '/login';
@@ -97,5 +105,14 @@ class DatabaseHelper{
   }
   Future logout() async {
     await deleteUser();
+  }
+  Future sendLocation(double latitude, double longitude) async {
+    Database? db = await this.db;
+    await db!.insert('locations', {
+      'latitude': latitude,
+      'longitude': longitude,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+    print("Ubicación guardada: ($latitude, $longitude)");
   }
 }

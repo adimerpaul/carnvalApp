@@ -4,10 +4,14 @@ import 'package:carnaval/services/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'addons/notification.dart';
 import 'addons/scaffold.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initNotifications();
+
   const bool isProduction = bool.fromEnvironment('dart.vm.product');
   await dotenv.load(fileName: isProduction ? ".env.production" : ".env");
   runApp(MyApp());
@@ -35,9 +39,6 @@ class _MyAppState extends State<MyApp> {
     if (await Permission.storage.isGranted) {
       print('Permiso de almacenamiento concedido');
       success(context, 'Permiso de almacenamiento concedido');
-    }else{
-      print('Permiso de almacenamiento denegado');
-      error(context, 'Permiso de almacenamiento denegado');
     }
   }
 

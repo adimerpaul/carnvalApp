@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'package:carnaval/addons/notification.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart'; // Para obtener la ubicación
 import '../services/DatabaseHelper.dart';
 
 class HomePage extends StatefulWidget {
@@ -9,6 +12,57 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool _isSendingLocation = false; // Estado para verificar si se está enviando la ubicación
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // showNotification('Bienvenido a la aplicación de Carnaval Oruro', 0);
+  }
+
+  void _toggleLocationSending() async {
+    if (_isSendingLocation) {
+      // Si ya se está enviando, detener el envío
+      setState(() {
+        _isSendingLocation = false;
+      });
+      _timer?.cancel(); // Detiene el temporizador
+    } else {
+      // Inicia el envío de ubicación cada 5 segundos
+      setState(() {
+        _isSendingLocation = true;
+      });
+      _timer = Timer.periodic(Duration(seconds: 5), (timer) async {
+        await _sendLocation();
+      });
+    }
+  }
+
+  Future<void> _sendLocation() async {
+    try {
+      // Obtiene la ubicación actual
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      // Muestra una notificación con la hora y coordenadas
+      String currentTime = TimeOfDay.now().format(context);
+      showNotification('Enviando ubicación: $currentTime', 1);
+
+      // Envía la ubicación a la base de datos
+      await DatabaseHelper().sendLocation(position.latitude, position.longitude);
+
+    } catch (e) {
+      print('Error obteniendo la ubicación: $e');
+      showNotification('Error obteniendo la ubicación', 1);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancela el temporizador al salir
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,9 +75,18 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text('Bienvenido a la aplicación de Carnaval Oruro'),
             ElevatedButton(
+              onPressed: _toggleLocationSending,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isSendingLocation ? Colors.red : Colors.green, // Cambia el color
+                foregroundColor: Colors.white, // Cambia el color del texto
+              ),
+              child: Text(_isSendingLocation ? 'Enviando' : 'Mandar ubicación',style: TextStyle(fontSize: 20)),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
               onPressed: () async {
-                await DatabaseHelper().logout(); // Asegúrate de esperar a que se complete
-                Navigator.pushReplacementNamed(context, '/'); // Redirige a la pantalla de inicio de sesión
+                await DatabaseHelper().logout();
+                Navigator.pushReplacementNamed(context, '/');
               },
               child: Text('Cerrar sesión'),
             ),
