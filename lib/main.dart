@@ -1,8 +1,12 @@
+import 'package:carnaval/services/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
 
 import 'addons/scaffold.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  const bool isProduction = bool.fromEnvironment('dart.vm.product');
+  await dotenv.load(fileName: isProduction ? ".env.production" : ".env");
   runApp(MyApp());
 }
 
@@ -26,12 +30,21 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _codeController = TextEditingController();
-  bool _isCodeVisible = false;
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _usernameController.text = 'centralistas';
+    _passwordController.text = 'centralistas';
+  }
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      // print("Inicio de sesión exitoso!");
+      DatabaseHelper().login(_usernameController.text, _passwordController.text);
       success(context, 'Inicio de sesión exitoso!');
     }
   }
@@ -39,9 +52,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text('Login Page'),
-      // ),
       backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
@@ -57,32 +67,42 @@ class _LoginPageState extends State<LoginPage> {
                   height: 100,
                 ),
                 SizedBox(height: 20),
-                // Campo de código de 4 dígitos
+                // Campo de nombre de usuario
                 TextFormField(
-                  controller: _codeController,
+                  controller: _usernameController,
                   decoration: InputDecoration(
-                    labelText: 'Código de 4 dígitos',
+                    labelText: 'Nombre de usuario',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingresa tu nombre de usuario';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20),
+                // Campo de contraseña
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
                     border: OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isCodeVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
-                          _isCodeVisible = !_isCodeVisible;
+                          _isPasswordVisible = !_isPasswordVisible;
                         });
                       },
                     ),
                   ),
-                  obscureText: !_isCodeVisible,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
+                  obscureText: !_isPasswordVisible,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa el código';
-                    }
-                    if (value.length != 4 || !RegExp(r'^\d{4}$').hasMatch(value)) {
-                      return 'El código debe tener exactamente 4 dígitos';
+                      return 'Por favor ingresa tu contraseña';
                     }
                     return null;
                   },
@@ -99,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    backgroundColor: Colors.blueAccent, // Cambiado a un tono más intenso
+                    backgroundColor: Colors.blueAccent, // Color del botón
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -108,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Nuevo Usuario? "),
+                    Text("¿Nuevo usuario? "),
                     GestureDetector(
                       onTap: () {
                         // Navegar a la página de registro
