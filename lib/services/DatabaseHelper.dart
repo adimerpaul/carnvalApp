@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 class DatabaseHelper{
   static final DatabaseHelper _instance = DatabaseHelper.internal();
   static Database? _database;
+  static String? url = dotenv.env['API_URL'];
   factory DatabaseHelper() => _instance;
   DatabaseHelper.internal();
   Future<Database?> get db async {
@@ -29,7 +30,8 @@ class DatabaseHelper{
         name TEXT,
         email TEXT,
         dancer_id INTEGER,
-        token TEXT
+        token TEXT,
+        url TEXT
       )
     ''');
     await db.execute('''
@@ -65,7 +67,8 @@ class DatabaseHelper{
         'name': res['user']['name'],
         'email': res['user']['email'],
         'dancer_id': res['user']['dancer_id'],
-        'token': res['token']
+        'token': res['token'],
+        'url': dotenv.env['API_URL']
       };
 
       try {
@@ -114,5 +117,32 @@ class DatabaseHelper{
       'timestamp': DateTime.now().toIso8601String(),
     });
     print("Ubicación guardada: ($latitude, $longitude)");
+  }
+
+  Future insertLocation(Map<String, dynamic> location) async {
+    var user = await getUser();
+
+    if (user == null || user['token'] == null) {
+      print("Error: Usuario no autenticado o token faltante.");
+      return;
+    }
+
+    var url = user['url'] + '/dancersUpdate';
+    var token = user['token']; // Obtén el token del usuario
+
+    var response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token', // Agrega el token en el encabezado de autorización
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'lat': location['latitud'],
+        'lng': location['longitud'],
+        'id': user['dancer_id'].toString(),
+      }),
+    );
+    print('API response: ${response.body}');
   }
 }

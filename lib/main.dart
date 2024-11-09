@@ -4,12 +4,15 @@ import 'package:carnaval/services/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'addons/foreground.dart';
 import 'addons/notification.dart';
 import 'addons/scaffold.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeService();
+
   await initNotifications();
 
   const bool isProduction = bool.fromEnvironment('dart.vm.product');
