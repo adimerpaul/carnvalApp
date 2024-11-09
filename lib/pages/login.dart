@@ -29,8 +29,8 @@ class _LoginPageState extends State<LoginPage> {
       var res =  await DatabaseHelper().login(_usernameController.text, _passwordController.text);
       print(res);
       if (res['user'] != null && res['token'] != null) {
-        // Navigator.pushReplacementNamed(context, '/home');
         success(context, 'Bienvenido ${res['user']['name']}');
+        Navigator.pushReplacementNamed(context, '/home');
       }else{
         error(context, 'Error al iniciar sesión');
       }

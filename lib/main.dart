@@ -1,4 +1,5 @@
 import 'package:carnaval/pages/login.dart';
+import 'package:carnaval/pages/home.dart'; // Importa tu página de inicio
 import 'package:carnaval/services/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
 
@@ -19,9 +20,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(),
+      // Define rutas de navegación
+      routes: {
+        '/': (context) => LoginPage(),      // Página de inicio de sesión
+        '/home': (context) => HomePage(),    // Página de inicio o principal
+      },
+      initialRoute: '/', // Ruta inicial
     );
   }
 }
-
-
