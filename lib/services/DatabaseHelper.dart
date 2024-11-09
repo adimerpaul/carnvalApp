@@ -26,7 +26,8 @@ class DatabaseHelper{
         user_id INTEGER,
         name TEXT,
         email TEXT,
-        dancer_id INTEGER
+        dancer_id INTEGER,
+        token TEXT
       )
     ''');
   }
