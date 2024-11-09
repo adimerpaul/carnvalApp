@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-void successfulLogin(BuildContext context) {
+void success(BuildContext context, message) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('Inicio de sesión exitoso!'),
+      content: Text(message),
       backgroundColor: Colors.green,
     ),
   );

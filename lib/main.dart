@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'addons/scaffold.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -24,24 +26,23 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
+  bool _isCodeVisible = false;
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      print("Inicio de sesión exitoso!");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Inicio de sesión exitoso!')),
-      );
+      // print("Inicio de sesión exitoso!");
+      success(context, 'Inicio de sesión exitoso!');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login Page'),
-      ),
+      // appBar: AppBar(
+      //   title: Text('Login Page'),
+      // ),
+      backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -50,86 +51,72 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/1/17/Google-flutter-logo.png',
+                // Logo
+                Image.asset(
+                  'assets/images/logofull.png',
                   height: 100,
                 ),
                 SizedBox(height: 20),
+                // Campo de código de 4 dígitos
                 TextFormField(
-                  controller: _emailController,
+                  controller: _codeController,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'Código de 4 dígitos',
                     border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa tu correo electrónico';
-                    }
-                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                      return 'Ingresa un correo válido';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa tu contraseña';
-                    }
-                    if (value.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      // Lógica para recuperar contraseña
-                    },
-                    child: Text(
-                      'Forgot Password',
-                      style: TextStyle(color: Colors.blue),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isCodeVisible ? Icons.visibility : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isCodeVisible = !_isCodeVisible;
+                        });
+                      },
                     ),
                   ),
+                  obscureText: !_isCodeVisible,
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingresa el código';
+                    }
+                    if (value.length != 4 || !RegExp(r'^\d{4}$').hasMatch(value)) {
+                      return 'El código debe tener exactamente 4 dígitos';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: 20),
+                // Botón de inicio de sesión
                 ElevatedButton(
                   onPressed: _login,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 32.0),
-                    child: Text('Login', style: TextStyle(fontSize: 18)),
+                    child: Text('Ingresar', style: TextStyle(fontSize: 18)),
                   ),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    backgroundColor: Colors.blue, // Cambiado de 'primary' a 'backgroundColor'
+                    backgroundColor: Colors.blueAccent, // Cambiado a un tono más intenso
+                    foregroundColor: Colors.white,
                   ),
                 ),
                 SizedBox(height: 20),
+                // Enlace para crear cuenta
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("New User? "),
+                    Text("Nuevo Usuario? "),
                     GestureDetector(
                       onTap: () {
                         // Navegar a la página de registro
                       },
                       child: Text(
-                        "Create Account",
+                        "Crear cuenta",
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: Colors.blueAccent,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
