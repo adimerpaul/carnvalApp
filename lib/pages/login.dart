@@ -13,6 +13,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -22,10 +23,18 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController.text = 'centralistas';
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      DatabaseHelper().login(_usernameController.text, _passwordController.text);
-      success(context, 'Inicio de sesión exitoso!');
+      setState(() {_loading = true;});
+      var res =  await DatabaseHelper().login(_usernameController.text, _passwordController.text);
+      print(res);
+      if (res['user'] != null && res['token'] != null) {
+        // Navigator.pushReplacementNamed(context, '/home');
+        success(context, 'Bienvenido ${res['user']['name']}');
+      }else{
+        error(context, 'Error al iniciar sesión');
+      }
+      setState(() {_loading = false;});
     }
   }
 
@@ -90,10 +99,14 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 20),
                 // Botón de inicio de sesión
                 ElevatedButton(
-                  onPressed: _login,
+                  onPressed: _loading ? null : _login,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 32.0),
-                    child: Text('Ingresar', style: TextStyle(fontSize: 18)),
+                    child: _loading
+                        ? CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    )
+                        : Text('Iniciar sesión', style: TextStyle(fontSize: 20)),
                   ),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(

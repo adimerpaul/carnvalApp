@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -31,28 +33,59 @@ class DatabaseHelper{
       )
     ''');
   }
-  Future login(username,password) async {
-    Database? db = await this.db;
+  Future login(String username, String password) async {
     var url = dotenv.env['API_URL']! + '/login';
-    var response = await http.post(Uri.parse(url,), body: {
+    var response = await http.post(Uri.parse(url), body: {
       'nickname': username,
       'password': password
     });
+
+    print('API response: ${response.body}'); // Para verificar la respuesta de la API
+
     if (response.statusCode == 200) {
-      var res = response.body;
-      print(res);
-      return res;
+      var res = jsonDecode(response.body);
+
+      // Verifica que la respuesta tenga los datos necesarios
+      if (res['user'] == null || res['token'] == null) {
+        print("Error: La respuesta de la API no contiene 'user' o 'token'");
+        return;
+      }
+
+      var row = {
+        'id': 1,
+        'user_id': res['user']['id'],
+        'name': res['user']['name'],
+        'email': res['user']['email'],
+        'dancer_id': res['user']['dancer_id'],
+        'token': res['token']
+      };
+
+      try {
+        Database? db = await this.db;
+        if (db == null) {
+          print("Database is not initialized.");
+          return;
+        }
+        await db.delete('users', where: 'id = ?', whereArgs: [1]);
+        await db.insert('users', row);
+        print("User inserted successfully");
+      } catch (e) {
+        print("Error inserting user: $e");
+      }
+
+      return {
+        'user': res['user'],
+        'token': res['token']
+      };
     } else {
-      print(response.statusCode);
+      print("API request failed with status: ${response.statusCode}");
+      return {
+        'user': null,
+        'token': null
+      };
     }
-    // var res = await db!.query('users', where: 'id = ?', whereArgs: [1]);
-    // if (res.isNotEmpty) {
-    //   return await db.update('users', row, where: 'id = ?', whereArgs: [1]);
-    // }else{
-    //   row['id'] = 1;
-    //   return await db.insert('users', row);
-    // }
   }
+
   Future getUser() async {
     Database? db = await this.db;
     var res = await db!.query('users', where: 'id = ?', whereArgs: [1]);
