@@ -2,6 +2,7 @@ import 'package:carnaval/pages/login.dart';
 import 'package:carnaval/pages/home.dart'; // Importa tu página de inicio
 import 'package:carnaval/services/DatabaseHelper.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'addons/scaffold.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,7 +13,34 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    requestPermissions();
+  }
+  Future<void> requestPermissions() async {
+    await [
+      Permission.storage,
+      Permission.location,
+      Permission.notification,
+      Permission.ignoreBatteryOptimizations,
+    ].request();
+    if (await Permission.storage.isGranted) {
+      print('Permiso de almacenamiento concedido');
+      success(context, 'Permiso de almacenamiento concedido');
+    }else{
+      print('Permiso de almacenamiento denegado');
+      error(context, 'Permiso de almacenamiento denegado');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,10 +50,39 @@ class MyApp extends StatelessWidget {
       ),
       // Define rutas de navegación
       routes: {
-        '/': (context) => LoginPage(),      // Página de inicio de sesión
-        '/home': (context) => HomePage(),    // Página de inicio o principal
+        '/': (context) => InitialPage(),  // Página inicial que verifica el usuario
+        '/login': (context) => LoginPage(),
+        '/home': (context) => HomePage(),
       },
       initialRoute: '/', // Ruta inicial
+    );
+  }
+}
+class InitialPage extends StatefulWidget {
+  @override
+  _InitialPageState createState() => _InitialPageState();
+}
+
+class _InitialPageState extends State<InitialPage> {
+  @override
+  void initState() {
+    super.initState();
+    _checkIfLoggedIn();
+  }
+
+  Future<void> _checkIfLoggedIn() async {
+    var user = await DatabaseHelper().getUser();
+    if (user != null) {
+      Navigator.pushReplacementNamed(context, '/home'); // Redirige a Home si está logueado
+    } else {
+      Navigator.pushReplacementNamed(context, '/login'); // Redirige a Login si no está logueado
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(child: CircularProgressIndicator()), // Indicador de carga
     );
   }
 }

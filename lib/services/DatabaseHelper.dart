@@ -95,4 +95,7 @@ class DatabaseHelper{
     Database? db = await this.db;
     return await db!.delete('users', where: 'id = ?', whereArgs: [1]);
   }
+  Future logout() async {
+    await deleteUser();
+  }
 }

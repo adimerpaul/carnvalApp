@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/DatabaseHelper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,8 +21,9 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text('Bienvenido a la aplicación de Carnaval Oruro'),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/');
+              onPressed: () async {
+                await DatabaseHelper().logout(); // Asegúrate de esperar a que se complete
+                Navigator.pushReplacementNamed(context, '/'); // Redirige a la pantalla de inicio de sesión
               },
               child: Text('Cerrar sesión'),
             ),
