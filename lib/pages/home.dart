@@ -3,6 +3,7 @@ import 'package:carnaval/addons/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart'; // Para obtener la ubicación
 import '../services/DatabaseHelper.dart';
+import 'package:intl/intl.dart'; // Asegúrate de tener esta importación
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,13 +40,16 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+
   Future<void> _sendLocation() async {
     try {
       // Obtiene la ubicación actual
       Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
+      // Obtiene la hora actual con segundos
+      String currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+
       // Muestra una notificación con la hora y coordenadas
-      String currentTime = TimeOfDay.now().format(context);
       showNotification('Enviando ubicación: $currentTime', 1);
 
       // Envía la ubicación a la base de datos
